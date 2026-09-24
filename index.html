@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#063653">
+  <meta name="description" content="CaseUp - Düzeltici Faaliyet Portalı">
+  <meta name="application-name" content="CaseUp">
+  <title>CaseUp | Düzeltici Faaliyet Portalı</title>
+
+  <style>
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:#f2f7fa;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    #appFrame{
+      display:block;
+      width:100%;
+      height:100dvh;
+      border:0;
+      background:#fff;
+    }
+
+    #loading{
+      position:fixed;
+      inset:0;
+      z-index:20;
+      display:grid;
+      place-items:center;
+      background:
+        radial-gradient(circle at 70% 10%,rgba(17,168,160,.10),transparent 26rem),
+        linear-gradient(180deg,#f8fbfd 0%,#eef5f8 100%);
+      transition:opacity .28s ease,visibility .28s ease;
+    }
+
+    #loading.hide{
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+    }
+
+    .loadingCard{
+      width:min(360px,calc(100vw - 34px));
+      text-align:center;
+      padding:30px 26px;
+      color:#173b50;
+    }
+
+    .logo{
+      width:64px;
+      height:64px;
+      margin:0 auto 15px;
+      border-radius:19px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(145deg,#063653,#087e98);
+      color:#fff;
+      font-size:28px;
+      font-weight:800;
+      box-shadow:0 16px 38px rgba(6,54,83,.20);
+    }
+
+    .loadingCard h1{
+      margin:0;
+      font-size:24px;
+      letter-spacing:-.4px;
+    }
+
+    .loadingCard p{
+      margin:8px 0 0;
+      font-size:13px;
+      color:#718692;
+    }
+
+    .bar{
+      width:210px;
+      height:7px;
+      margin:22px auto 0;
+      border-radius:999px;
+      background:#dfeaf0;
+      overflow:hidden;
+    }
+
+    .bar span{
+      display:block;
+      width:40%;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,#0878a7,#11a8a0,#0878a7);
+      animation:move 1.3s ease-in-out infinite;
+    }
+
+    @keyframes move{
+      from{transform:translateX(-120%)}
+      to{transform:translateX(350%)}
+    }
+
+    #errorBox{
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:30;
+      place-items:center;
+      background:#f2f7fa;
+      padding:20px;
+    }
+
+    #errorBox.show{display:grid}
+
+    .errorCard{
+      max-width:520px;
+      background:#fff;
+      border:1px solid #dbe7ed;
+      border-radius:20px;
+      padding:26px;
+      text-align:center;
+      box-shadow:0 16px 42px rgba(25,62,82,.10);
+    }
+
+    .errorCard h2{
+      margin:0 0 8px;
+      color:#173b50;
+      font-size:19px;
+    }
+
+    .errorCard p{
+      margin:0;
+      color:#718692;
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .slogan{
+      margin-top:16px!important;
+      font-size:11px!important;
+      color:#91a1ab!important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="loading">
+    <div class="loadingCard">
+      <div class="logo">C</div>
+      <h1>CaseUp</h1>
+      <p>Düzeltici Faaliyet Portalı yükleniyor...</p>
+      <div class="bar"><span></span></div>
+    </div>
+  </div>
+
+  <div id="errorBox">
+    <div class="errorCard">
+      <h2>CaseUp bağlantısı henüz tanımlanmadı</h2>
+      <p>
+        Bu dosyada <b>CASEUP_APP_URL</b> alanına
+        Düzeltici Faaliyet Portalının Apps Script <b>/exec</b> adresini girin.
+      </p>
+      <p class="slogan">Her çözülen bildirim süreçleri bir adım yukarı taşır.</p>
+    </div>
+  </div>
+
+  <iframe
+    id="appFrame"
+    title="CaseUp Düzeltici Faaliyet Portalı"
+    allow="camera; microphone; clipboard-read; clipboard-write"
+    referrerpolicy="strict-origin-when-cross-origin">
+  </iframe>
+
+  <script>
+    /*
+      ============================================================
+      CASEUP - GITHUB INDEX
+      GitHub Pages:
+      https://tblpgdijital.github.io/caseup/
+
+      Aşağıdaki alana Düzeltici Faaliyet Portalının
+      Apps Script WEB APP /exec linkini yazın.
+      Örnek:
+      https://script.google.com/macros/s/AKfycbXXXXXXXXXXXX/exec
+      ============================================================
+    */
+    const CASEUP_APP_URL = 'https://script.google.com/macros/s/AKfycbxv5I18idU7u_JheqIrwpIBUGcrNJ5C4WdsFNBDA2nkGS7-2hKDTAQMBBFVAzv91Bjz/exec';
+
+    function buildTargetUrl(){
+      const base = String(CASEUP_APP_URL || '').trim();
+
+      if(
+        !base ||
+        base.includes('BURAYA_APPS_SCRIPT_EXEC_LINKINI_YAZ') ||
+        !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/i.test(base)
+      ){
+        return '';
+      }
+
+      const current = new URLSearchParams(window.location.search);
+
+      // Apps Script tarafına GitHub içinde açıldığını bildir.
+      if(!current.has('embedded')){
+        current.set('embedded','1');
+      }
+
+      const separator = base.includes('?') ? '&' : '?';
+      return base + separator + current.toString();
+    }
+
+    const frame = document.getElementById('appFrame');
+    const loading = document.getElementById('loading');
+    const errorBox = document.getElementById('errorBox');
+    const target = buildTargetUrl();
+
+    if(!target){
+      loading.classList.add('hide');
+      errorBox.classList.add('show');
+    }else{
+      frame.src = target;
+
+      frame.addEventListener('load',()=>{
+        setTimeout(()=>loading.classList.add('hide'),180);
+      });
+
+      // Apps Script içinden gelen hazır mesajını destekler.
+      window.addEventListener('message',event=>{
+        const data = event.data || {};
+        if(
+          data.type === 'TBPG_PORTAL_READY' ||
+          data.portal === 'DF' ||
+          data.portal === 'CASEUP'
+        ){
+          loading.classList.add('hide');
+        }
+      });
+
+      // Yükleme ekranı herhangi bir nedenle mesaj alamazsa sonsuza kadar kalmasın.
+      setTimeout(()=>loading.classList.add('hide'),12000);
+    }
+  </script>
+
+</body>
+</html>
