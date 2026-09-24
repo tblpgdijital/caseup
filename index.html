@@ -8,50 +8,70 @@
   <title>CaseUp | Düzeltici Faaliyet Portalı</title>
   <style>
     *{box-sizing:border-box}
-    html,body{margin:0;width:100%;height:100%;font-family:Arial,Helvetica,sans-serif;background:#f2f7fa}
-    body{display:grid;place-items:center}
-    .wrap{text-align:center;padding:28px;color:#173b50}
-    .logo{width:64px;height:64px;margin:0 auto 14px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,#063653,#087e98);color:#fff;font-size:28px;font-weight:800;box-shadow:0 16px 38px rgba(6,54,83,.20)}
-    h1{margin:0;font-size:24px}
-    p{margin:8px 0 0;color:#718692;font-size:13px}
-    .bar{width:210px;height:7px;margin:22px auto 0;border-radius:999px;background:#dfeaf0;overflow:hidden}
-    .bar span{display:block;width:40%;height:100%;border-radius:999px;background:linear-gradient(90deg,#0878a7,#11a8a0,#0878a7);animation:move 1.25s ease-in-out infinite}
-    .link{display:inline-block;margin-top:18px;color:#0878a7;font-size:12px;text-decoration:none}
-    .slogan{margin-top:18px;font-size:11px;color:#97a6af}
-    @keyframes move{from{transform:translateX(-120%)}to{transform:translateX(350%)}}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f2f7fa;font-family:Arial,Helvetica,sans-serif}
+    #appFrame{display:block;width:100%;height:100dvh;border:0;background:#fff}
+    #loading{
+      position:fixed;inset:0;z-index:10;display:grid;place-items:center;
+      background:linear-gradient(180deg,#f8fbfd,#eef5f8);
+      transition:opacity .25s ease,visibility .25s ease
+    }
+    #loading.hide{opacity:0;visibility:hidden;pointer-events:none}
+    .box{text-align:center;color:#173b50}
+    .logo{
+      width:58px;height:58px;margin:0 auto 12px;border-radius:17px;
+      display:grid;place-items:center;background:linear-gradient(145deg,#063653,#087e98);
+      color:#fff;font-size:25px;font-weight:800;box-shadow:0 14px 34px rgba(6,54,83,.18)
+    }
+    .box b{display:block;font-size:20px}
+    .box span{display:block;margin-top:6px;font-size:12px;color:#718692}
+    .bar{width:190px;height:6px;margin:18px auto 0;background:#dfeaf0;border-radius:999px;overflow:hidden}
+    .bar i{display:block;width:40%;height:100%;background:linear-gradient(90deg,#0878a7,#11a8a0,#0878a7);animation:m 1.2s ease-in-out infinite}
+    @keyframes m{from{transform:translateX(-120%)}to{transform:translateX(350%)}}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="logo">C</div>
-    <h1>CaseUp</h1>
-    <p>Düzeltici Faaliyet Portalına yönlendiriliyorsunuz...</p>
-    <div class="bar"><span></span></div>
-    <a id="manualLink" class="link" href="#">Otomatik açılmazsa buraya tıklayın</a>
-    <div class="slogan">Her çözülen bildirim süreçleri bir adım yukarı taşır.</div>
+  <div id="loading">
+    <div class="box">
+      <div class="logo">C</div>
+      <b>CaseUp</b>
+      <span>Düzeltici Faaliyet Portalı yükleniyor...</span>
+      <div class="bar"><i></i></div>
+    </div>
   </div>
+
+  <iframe
+    id="appFrame"
+    title="CaseUp Düzeltici Faaliyet Portalı"
+    allow="camera; microphone; clipboard-read; clipboard-write"
+    referrerpolicy="strict-origin-when-cross-origin">
+  </iframe>
 
   <script>
     const CASEUP_APP_URL = 'https://script.google.com/macros/s/AKfycbxv5I18idU7u_JheqIrwpIBUGcrNJ5C4WdsFNBDA2nkGS7-2hKDTAQMBBFVAzv91Bjz/exec';
 
-    function targetUrl(){
-      try{
-        const incoming = new URLSearchParams(window.location.search);
-        incoming.delete('embedded'); // iframe kullanılmıyor
-        const qs = incoming.toString();
-        return CASEUP_APP_URL + (qs ? (CASEUP_APP_URL.includes('?') ? '&' : '?') + qs : '');
-      }catch(e){
-        return CASEUP_APP_URL;
-      }
+    function makeTarget(){
+      const p = new URLSearchParams(window.location.search);
+      p.set('embedded','1');
+      return CASEUP_APP_URL + '?' + p.toString();
     }
 
-    const target = targetUrl();
-    document.getElementById('manualLink').href = target;
+    const frame = document.getElementById('appFrame');
+    const loading = document.getElementById('loading');
 
-    // GitHub Pages URL'sini tarayıcı geçmişinde bırakmadan Apps Script'e geç.
-    setTimeout(() => {
-      window.location.replace(target);
-    }, 350);
+    frame.src = makeTarget();
+
+    frame.addEventListener('load', () => {
+      setTimeout(() => loading.classList.add('hide'), 450);
+    });
+
+    window.addEventListener('message', (event) => {
+      const data = event.data || {};
+      if(data.type === 'TBPG_PORTAL_READY' || data.portal === 'DF' || data.portal === 'CASEUP'){
+        loading.classList.add('hide');
+      }
+    });
+
+    setTimeout(() => loading.classList.add('hide'), 12000);
   </script>
 </body>
 </html>
